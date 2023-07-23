@@ -18,7 +18,7 @@
         type = types.package;
       };
 
-      authKeyPath = lib.mkOption {
+      authKeyEnvFile = lib.mkOption {
         description = "Path to a file containing a tailscale auth key. Make this a secret";
         type = types.path;
       };
@@ -29,10 +29,10 @@
       default = {};
       type = types.attrsOf (types.submodule {
         options = {
-          authKeyPath = lib.mkOption {
+          authKeyEnvFile = lib.mkOption {
             description = "Path to a file containing a tailscale auth key. Make this a secret";
             type = types.path;
-            default = config.services.tsnsrv.defaults.authKeyPath;
+            default = config.services.tsnsrv.defaults.authKeyEnvFile;
           };
 
           ephemeral = mkOption {
@@ -135,7 +135,6 @@
                      -listenAddr="${value.listenAddr}" \
                      -stripPrefix="${lib.boolToString value.stripPrefix}" \
                      -stateDir="$STATE_DIRECTORY/tsnet-tsnsrv" \
-                     -authkeyPath="${value.authKeyPath}" \
                      -insecureHTTPS="${lib.boolToString value.insecureHTTPS}" \
                      -suppressWhois="${lib.boolToString value.suppressWhois}" \
                      ${
@@ -158,6 +157,7 @@
               SupplementaryGroups = [config.users.groups.tsnsrv.name] ++ value.supplementalGroups;
               StateDirectory = "tsnsrv-${name}";
               StateDirectoryMode = "0700";
+              EnviromentFile=value.authKeyEnvFile;
 
               PrivateNetwork = false; # We need access to the internet for ts
               # Activate a bunch of strictness:
@@ -184,7 +184,7 @@
               RemoveIPC = true;
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
-              ReadOnlyPaths = [ value.authKeyPath ] ++ lib.optional (value.downstreamUnixAddr != null) value.downstreamUnixAddr;
+              ReadOnlyPaths = lib.optional (value.downstreamUnixAddr != null) value.downstreamUnixAddr;
               UMask = "0066";
             };
           }
