@@ -184,6 +184,7 @@
               RemoveIPC = true;
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
+              ReadOnlyPaths = [ value.authKeyPath ] ++ lib.optional (value.downstreamUnixAddr != null) value.downstreamUnixAddr;
               UMask = "0066";
             };
           }
